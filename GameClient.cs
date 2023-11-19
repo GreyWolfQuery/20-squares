@@ -162,7 +162,7 @@ namespace TwentySquares
                         break;
 
 
-                    while (true)
+                    while (!IsEnd(stream))
                     {
                         row.SetFromBytes(FetchRaw(stream, "SEND-ROW"));
                         PrintRow();
@@ -205,19 +205,18 @@ namespace TwentySquares
 
                 PrintStatus();
 
-                string winner = Fetch(stream, "WINNER");
-
                 Console.Clear();
+                row.SetFromBytes(FetchRaw(stream, "SEND-ROW"));
                 PrintRow();
 
-                if (winner != "NONE")
+                if (row.Winner() != Square.NONE)
                 {
-                    bool won = ((isX && winner == "X") || (!isX && winner == "O"));
+                    bool won = ((isX && row.Winner() == Square.X) || (!isX && row.Winner() == Square.O));
 
                     if (won)
-                        PrintStatus("Vyhrál jsi!", ConsoleColor.Yellow);
+                        PrintStatus("✦ Gratuluji! Vyhrál/a jsi!", ConsoleColor.Yellow);
                     else
-                        PrintStatus("Prohrál jsi. Příště si povedeš lépe.", ConsoleColor.DarkMagenta);
+                        PrintStatus("✦ Prohrál/a jsi. Příště si určitě povedeš lépe.", ConsoleColor.DarkMagenta);
                 }
                 else
                 {
