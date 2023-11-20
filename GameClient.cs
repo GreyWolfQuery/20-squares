@@ -15,7 +15,7 @@ namespace TwentySquares
     public class GameClient
     {
         private readonly Row row;
-        private bool isX = false, myTurn = false, end = false;
+        private bool isX = false, myTurn = false, end = false, statusAnimation = false;
         private Status status = Status.Waiting;
         private int port = 0;
 
@@ -86,10 +86,23 @@ namespace TwentySquares
 
         private void PrintStatus()
         {
+            statusAnimation = false;
             switch (status)
             {
                 case Status.Waiting:
-                    PrintStatus("? Čekání na hráče...", ConsoleColor.DarkYellow);
+                    new Task(() =>
+                    {
+                        bool frame = true, running = true;
+                        statusAnimation = true;
+                        new Task(() => { while (statusAnimation) ; running = false; }).Start();
+
+                        while (running)
+                        {
+                            PrintStatus($"{(frame ? "°" : " ")} Čekání na hráče...", ConsoleColor.DarkYellow, false);
+                            frame = !frame;
+                            Thread.Sleep(500);
+                        }
+                    }).Start();
                     break;
                 case Status.Connected:
                     PrintStatus("~ Připojeno", ConsoleColor.Blue);
@@ -100,8 +113,11 @@ namespace TwentySquares
             }
         }
 
-        private void PrintStatus(string status, ConsoleColor bg)
+        private void PrintStatus(string status, ConsoleColor bg, bool disableAnimation = true)
         {
+            if (disableAnimation)
+                statusAnimation = false;
+
             int leftPos = Console.CursorLeft, topPos = Console.CursorTop;
             string msg = $" {status}", strPort = $"#{port} ";
 
@@ -214,9 +230,9 @@ namespace TwentySquares
                     bool won = ((isX && row.Winner() == Square.X) || (!isX && row.Winner() == Square.O));
 
                     if (won)
-                        PrintStatus("✦ Gratuluji! Vyhrál/a jsi!", ConsoleColor.Yellow);
+                        PrintStatus("* Gratuluji! Vyhrál/a jsi!", ConsoleColor.Yellow);
                     else
-                        PrintStatus("✦ Prohrál/a jsi. Příště si určitě povedeš lépe.", ConsoleColor.DarkMagenta);
+                        PrintStatus("§ Prohrál/a jsi. Příště si určitě povedeš lépe.", ConsoleColor.DarkMagenta);
                 }
                 else
                 {
